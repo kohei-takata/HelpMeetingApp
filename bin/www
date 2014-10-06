@@ -1,0 +1,74 @@
+#!/usr/bin/env node
+var debug = require('debug')('my-application');
+var app = require('../app');
+
+app.set('port', process.env.PORT || 3000);
+
+var server = app.listen(app.get('port'), function() {
+  debug('Express server listening on port ' + server.address().port);
+});
+
+// socket
+var io = require('socket.io').listen(server);
+
+io.configure(function () {
+    io.set("transports", ["xhr-polling"]); 
+    io.set("polling duration", 10); 
+
+    io.set('log level', 1);
+});
+
+io.sockets.on('connection', function(socket) {
+
+  socket.emit('connected');
+  
+  socket.on('init', function(roomName){
+    socket.set('roomName', roomName);
+    socket.join(roomName);
+  });
+  
+  socket.on('send', function(friendName, latitude, longitude) {
+    var roomName;
+    socket.get('roomName', function(err, _roomName){
+        roomName = _roomName;
+    });
+    if(roomName !== null){
+        socket.broadcast.to(roomName).emit('receive', friendName, latitude, longitude);
+    }
+  });
+  
+  //クライアント側からのイベントを受け取る。
+    socket.on('msg send', function (myName, msg) {
+        var now = new Date();
+        now.setTime(now.getTime() + + 32400000);
+        var roomName;
+        socket.get('roomName', function(err, _roomName){
+            roomName = _roomName;
+        });
+        if(roomName !== null){
+            //イベントを実行した方に実行する
+            socket.emit('msg push', myName, msg, dateFormat(now));
+            //イベントを実行した方以外に実行する
+            socket.broadcast.to(roomName).emit('msg push', myName, msg, dateFormat(now));
+        }
+    });
+
+});
+
+// dateFormat 関数の定義
+function dateFormat(date) {
+  var y = date.getFullYear();
+  var m = date.getMonth() + 1;
+  var d = date.getDate();
+  var w = date.getDay();
+  var h = date.getHours();
+  var mi = date.getMinutes();
+  var s = date.getSeconds();
+  var wNames = ['日', '月', '火', '水', '木', '金', '土'];
+
+  m = ('0' + m).slice(-2);
+  d = ('0' + d).slice(-2);
+
+  // フォーマット整形済みの文字列を戻り値にする
+  return y + '年' + m + '月' + d + '日 (' + wNames[w] + ') ' + h + '時' + mi + '分' + s + '秒';
+}

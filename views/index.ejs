@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <script type="text/javascript" src="/javascripts/jquery-1.11.0.min.js"></script> 
+    <script type="text/javascript" src="/javascripts/addclear.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="/javascripts/location.js"></script>
+    <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script> 
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <input type="hidden" id="myName" value="<%= myName %>">
+    <input type="hidden" id="roomName" value="<%= roomName %>">
+    <div id="map"></div>
+    <br />
+    <p>チャット</p>
+    <input type="text" name="message" id="message" />
+    <button id="btn">送信</button>
+    <table id="list"></table>
+  </body>
+</html>
